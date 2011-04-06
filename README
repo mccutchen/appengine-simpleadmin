@@ -1,0 +1,76 @@
+==============================================================================
+A Brief Guide to the New Admin Backend or: How I Learned to Stop Worrying and
+Love the App Engine
+
+by Will McCutchen <will@keyingredient.com>
+==============================================================================
+
+Hooking up a very basic admin site can be done in as little as four steps,
+assuming you already have your models defined and corresponding
+djangoforms.ModelForms for each one you'd like to manage in the admin. If not,
+you should probably take care of that now.
+
+
+1.  Create the admin configuration file.
+
+    Choose a subdirectory from which you'd like to run the admin site (I tend
+    to choose ./backend/ for this purpose).
+
+    Add to that subdirectory a file called "admin.py" with contents like the
+    following:
+
+        import os
+        os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+        from google.appengine.dist import use_library
+        use_library('django', '1.1')
+
+        from ki.shared import newadmin
+
+        # Import the models and forms you'll be using in the admin site
+        from core import models, forms
+
+        # Create an admin object with the prefix you'll use in app.yaml and
+        # register models and forms to manage
+        admin = newadmin.SimpleAdmin('/backend')
+        admin.register(models.Application, forms.ApplicationForm)
+        admin.register(models.Account, forms.AccountForm)
+
+        if __name__ == '__main__':
+           admin.run(debug=False)
+
+    Note: The actual name of the file doesn't matter, you'll just have to
+    refer to it in your app.yaml by whatever name you give it.
+
+
+2.  Add an entry for the admin site to your app.yaml.
+
+    Something like this should do the trick, assuming you're installing it to
+    backend/admin.py as in the example above.  If you're not, adjust the url
+    and script paths accordingly.
+
+        - url: /backend/.*
+          script: backend/admin.py
+          secure: optional
+
+
+3.  Make the static media available at the URL /static/admin/ by symlinking
+    ./static/admin to ./ki/shared/newadmin/static
+
+
+4.  Add the admin templates to settings.TEMPLATE_DIRS.
+
+    You need to add the path to the admin templates directory to the
+    settings.TEMPLATE_DIRS setting (because our Jinja template rendering
+    infrastructure uses this setting to find templates, even if you're not
+    using Django at all).
+
+    Mine usually ends up looking like this:
+
+        TEMPLATE_DIRS = (
+            os.path.join(os.path.dirname(__file__), 'templates'),
+            os.path.join(os.path.dirname(__file__), 'ki', 'shared', 'newadmin', 'templates')
+        )
+
+    If you don't actually have a settings file in the root of your project,
+    you can just add one with only the TEMPLATE_DIRS setting defined, and it
+    should work (theoretically).

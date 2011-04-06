@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>
+			{% block page_title %}{% endblock %} | {{ admin_site_title }}
+		</title>
+		<link rel="stylesheet" href="/static/admin/css/admin.css" type="text/css">
+		<script src="/static/admin/js/clientcide.2.2.0.js" type="text/javascript"></script>
+		{% include "admin/_ckeditor.html" %}
+		{% block extra_ckeditor %}{% endblock %}
+		<script src="/static/admin/js/plupload.full.min.js" type="text/javascript"></script>
+		<script src="/static/admin/js/ajaxupload.js" type="text/javascript"></script>
+		<script src="/static/admin/js/admin.js" type="text/javascript"></script>
+		
+		{# Include custom CSS/JavaScript here #}
+		{% block extra_head %}{% endblock %}
+	</head>
+
+	<body>
+		<div id="auth">
+			{% if users.is_current_user_admin %}
+				Logged in as <b>{{ users.get_current_user.nickname }}</b>
+				<span>|</span>
+				<a href="{{ users.create_logout_url|f:admin.prefix }}">Log out</a>
+			{% else %}
+				<span class="bad">Not logged in as an administrator!</span>
+			{% endif %}
+		</div>
+
+		<div id="header">
+			<h1><a href="{{ admin.prefix }}/">{{ admin_site_title }}</a></h1>
+			<h2>for Key Ingredient</h2>
+		</div>
+
+		<div id="nav">
+			{% block nav %}{% endblock %}
+		</div>
+
+		<div id="content">
+			{% block content %}{% endblock %}
+		</div>
+	</body>
+</html>

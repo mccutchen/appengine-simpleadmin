@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block page_title %}
+    Dashboard
+{% endblock %}
+
+{% block nav %}
+    <ul id="tabs">
+        {% for type, form in admin.manageables %}
+            <li><a>{{ type|humanize }}s</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block content %}
+    {% for type, form in admin.manageables %}
+        <div id="{{ type }}" class="panel">
+
+            <div class="items">
+                <h2>{{ type|humanize }}s</h2>
+
+                {% if admin.filters_for|f:type %}
+                    <div class="filters hidden">
+                        <h3>Filters</h3>
+                        <div class="fields">
+                            {% for field in admin.filters_for|f:type %}
+                                <form action="filter/{{ type }}/{{ field }}/" method="get">
+                                    <label for="filter-{{ type }}-{{ field }}">
+                                        {# The field '__id__' has special meaning, which we should
+                                           spell out for the user. #}
+                                        {% if field == '__id__' %}
+                                            key id or name
+                                        {% else %}
+                                            {{ field|humanize }}
+                                        {% endif %}
+                                    </label>
+                                    <input type="text" name="q" id="filter-{{ type }}-{{ field }}">
+                                </form>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <form method="delete" action="{{ type }}/" class="bulk">
+                    <ul class="{{ type }}">
+                        <li class="empty">Loading {{ type|humanize|lower }}s</li>
+                    </ul>
+                    <p class="controls">
+                        <span class="count"><span>0</span> total {{ type|humanize|lower }}s</span>
+                        <a class="next disabled">Next &raquo;</a>
+                    </p>
+                    <p><input type="submit" value="Bulk Delete" name="delete"></p>
+                </form>
+            </div>
+        
+            <div class="new-item">
+                <h2>New {{ type|humanize }}</h2> 
+                {% if type in admin.children %}
+                    <p>New {{ type|humanize|lower }}s must be added from their {{ children|humanize|lower }}'s page.</p>
+                {% else %}
+                    {% if not admin.creatable|f:type %}
+                        <p>{{ type|humanize }}s cannot be created directly.</p>
+                    {% else %}
+                        <form method="post" action="{{ type }}/" id="{{ form.prefix }}-form" {% if form.is_multipart %}enctype="multipart/form-data"{% endif %}>
+                            <table cellspacing="0">
+                                {{ form.as_table|safe }}
+                                <tr>
+                                    <th></th>
+                                    <td><input type="submit" value="Create {{ type }}"/></td>
+                                </tr>
+                            </table>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

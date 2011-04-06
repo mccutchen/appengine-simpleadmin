@@ -1,0 +1,46 @@
+<script src="/static/admin/ckeditor/ckeditor.js" type="text/javascript"></script>
+<script type="text/javascript">
+	CKEDITOR.config.customConfig = '';
+	CKEDITOR.config.language = 'en';
+	CKEDITOR.config.format_tags = 'p;h1;h2;h3;h4;h5;h6;div';
+
+	CKEDITOR.addStylesSet('KI_Styles', [
+		// Chapter Divisions
+		{ name : 'Section', element : 'div', attributes : { 'class' : 'section' }},
+		{ name : 'Sub-Section' , element : 'div', attributes : { 'class' : 'sub-section' }},
+
+		// Section Divisions
+		{ name : 'Tip' , element : 'div', attributes : { 'class' : 'tip' }},
+		{ name : 'Aside' , element : 'div', attributes : { 'class' : 'aside' }},
+		{ name : 'Variation' , element : 'div', attributes : { 'class' : 'variation' }},
+	]);
+	CKEDITOR.config.stylesCombo_stylesSet = 'KI_Styles';
+
+	CKEDITOR.config.toolbar_KI_default = [
+		['Source'],
+		['Cut','Copy','Paste','PasteText','PasteFromWord','-'],
+		['Undo','Redo','-','Replace','-','SelectAll','RemoveFormat'],
+		['SpecialChar'],
+		'/',
+		['Styles','Format'],
+		['Bold','Italic'],
+		['NumberedList','BulletedList'],
+		['Link','Unlink']
+	];
+	CKEDITOR.config.toolbar = 'KI_default';
+
+	// Fix up the output HTML formatting
+	CKEDITOR.on('instanceReady', function(ev) {
+		ev.editor.dataProcessor.writer.setRules('p', {
+			breakBeforeOpen: true,
+			breakAfterOpen: false,
+			breakBeforeClose: false,
+			breakAfterClose: true
+		});
+		ev.editor.dataProcessor.writer.selfClosingEnd = '>';
+	});
+
+	CKEDITOR.config.forcePasteAsPlainText = true;
+	CKEDITOR.config.resize_enabled = false;
+	CKEDITOR.config.toolbarCanCollapse = false;
+</script>

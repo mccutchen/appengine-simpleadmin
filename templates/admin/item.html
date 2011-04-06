@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}
+	Edit {{ type }}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{ admin.prefix }}/">Dashboard</a>
+	{% for parentobj in obj|parents %}&raquo;
+		<a href="{{ admin.item_url(parentobj) }}">{{ parentobj }}</a>
+	{% endfor %}
+{% endblock %}
+
+{% block content %}
+	<div id="{{ type }}" class="item">
+		{% block item_header %}
+			<h2>
+				Edit {{ type }}
+				<span class="meta">
+					{% set parent = obj.parent() %}
+					({% if parent %}{{ parent.kind() }}: <a href="{{ admin.prefix }}/{{ parent.kind() }}/{{ parent|key }}/">{{ parent }}</a>, {% endif %}id: {{ obj|id }})
+				</span>
+			</h2>
+		{% endblock %}
+		{% include "admin/_edit_item_form.html" %}
+	</div>
+{% endblock %}
