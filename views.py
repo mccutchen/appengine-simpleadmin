@@ -47,8 +47,8 @@ class Item(AdminHandler):
         form_class = self.admin.form_for(kind)
 
         if form is None:
-            # Gather up the image fields, so we can provide an initial value of
-            # True to the form if the field already has image data init it
+            # Gather up the image fields, so we can provide an initial value
+            # of True to the form if the field already has image data init it
             img_fields = [k for k,v in obj.properties().items()
                           if isinstance(v, db.BlobProperty)]
             img_urls = dict((f, '%s/%s/%s/img/%s/' % (self.admin.prefix,
@@ -77,7 +77,7 @@ class Item(AdminHandler):
         # generic item template
         templates = ('admin/%s.html' % kind.lower(),
                      'admin/%s.html' % item_template)
-        self.render_jinja(templates, context, status_code=status)
+        self.render(templates, context, status=status)
 
     def post(self, kind, key):
         obj = entity_or_404(key)
