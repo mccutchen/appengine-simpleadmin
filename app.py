@@ -179,7 +179,7 @@ class SimpleAdmin(object):
         context for specific objects."""
         return {}
 
-    def handler(self, request_handler):
+    def wrap_handler(self, request_handler):
         """Derives an eponymous sublcass from the given request handler (a
         webapp.RequestHandler class), adding an 'admin' attribute pointing to
         this SimpleAdmin object and prefilling the handler's special CONTEXT
@@ -214,13 +214,16 @@ class SimpleAdmin(object):
 
         # A shortcut for generating a URL pattern tuple for this particular
         # admin site.
-        def url(pattern, view):
-            # Automatically surrounds the given pattern with the prefix from
-            # which the admin is being served Also ensures that the given view
-            # has an admin property added to it pointing to this admin
-            # instance.
-            return ('%s/%s' % (self.prefix, pattern.lstrip('/')),
-                    self.handler(view))
+        def url(pattern, handler):
+            # The prefix will have a trailing slash, so the pattern does not
+            # need a leading one. Also, the prefix's trailing slash should be
+            # optional if the pattern is empty.
+            pattern = pattern.lstrip('/') + ('' if pattern else '?')
+            # Wrap the given handler with a derived subclass that will have
+            # this admin instance and some default extra context for templates
+            # added to it.
+            handler = self.wrap_handler(handler)
+            return ('%s/%s' % (self.prefix, pattern), handler)
 
         # The URL patterns below restrict themselves to matching the known set
         # of models
