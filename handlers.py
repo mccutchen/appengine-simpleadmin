@@ -15,14 +15,22 @@ ADMIN_TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 class AdminHandler(webapp.RequestHandler):
 
+    extra_context = {}
+
     def respond(self, resp, status=200, content_type='text/html'):
         self.response.set_status(status)
         self.response.headers['Content-Type'] = content_type
         self.response.out.write(resp)
 
-    def render(self, path, ctx={}, status=200, content_type='text/html'):
+    def render(self, path, context=None, status=200,
+               content_type='text/html'):
         path = os.path.join(ADMIN_TEMPLATE_DIR, path)
-        self.respond(template.render(path, ctx), status, content_type)
+        # Figure out what the final context to pass to the template should be,
+        # based on the given context and the class's extra_context attribute
+        final_context = dict(self.extra_context)
+        final_context.update(context or {})
+        content = template.render(path, final_context)
+        return self.respond(content, status, content_type)
 
     def respond_json(self, stuff, status=200,
                      content_type='application/json'):
