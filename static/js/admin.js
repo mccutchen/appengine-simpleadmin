@@ -49,7 +49,7 @@ KI.Backend.Pager = function(list, url, params) {
 		},
 
 		onFailure: function(xhr) {
-			alert('Unable to load ' + kind + ': ' + xhr.responseText);
+			console.error('Unable to load ' + kind + ':\n' + xhr.responseText);
 		}
 	});
 
