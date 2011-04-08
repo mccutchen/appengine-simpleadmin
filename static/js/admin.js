@@ -416,13 +416,13 @@ function addNewItemHandler(form, itemList, deletable) {
 		return uploadFields.contains(uploader._button);
 	});
 
-	function doUploads(uri) {
+	function doUploads(url) {
 		// Submits the file uploaders for this form to a URL based on the
 		// response after the new item has been created.
 		uploaders.filter(function(uploader) {
 			return uploader._input.value;
 		}).each(function(uploader) {
-			var action = uri + 'img/' + uploader._settings.name + '/';
+			var action = url + 'img/' + uploader._settings.name + '/';
 			uploader._settings.action = action;
 			console.log('Submitting file upload: ', uploader);
 			uploader.submit();
@@ -444,7 +444,7 @@ function addNewItemHandler(form, itemList, deletable) {
 			// Once we've successfully created a new item, we can send any
 			// Ajax file uploads to it now
 			var resp = JSON.decode(txt);
-			doUploads(resp.uri);
+			doUploads(resp.url);
 
 			// Add the new item to the list of items
 			var newItem = addItemToList(resp, itemList, deletable);
@@ -589,7 +589,7 @@ function getRichTextEditors(form) {
 
 function addItemToList(item, itemList, deletable) {
 	var newItem = new Element('li', { 'class': 'added' });
-	var link = new Element('a', { href: item.uri, html: item.str });
+	var link = new Element('a', { href: item.url, html: item.str });
 	if (deletable) {
 		var check = new Element('input', {
 			type: 'checkbox',
