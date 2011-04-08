@@ -1,50 +1,50 @@
 {% extends "item.html" %}
 
 {% block content %}
-	{% block item_header %}{{ block.super }}{% endblock %}
+    {% block item_header %}{{ block.super }}{% endblock %}
 
-	<div id="{{ type }}" class="parent item">
-		{% include "_edit_item_form.html" %}
-	</div>
+    <div id="{{ type }}" class="parent item">
+        {% include "_edit_item_form.html" %}
+    </div>
 
-	{% block children_block %}
-		<div class="children">
-			{% block children %}
-				{% for child in children %}
-					<div class="child">
-						<h2>{{ child.type|humanize }}s</h2>
-						<form action="{{ child.type }}Orders/" method="post">
-							<ul id="{{ child.type }}-itemList" class="items">
-								{% for c in child.objs %}
-									<li id="{{ c|key }}">
-										<span class="handle" title="Drag to sort"></span>
-										<a href="{{ admin.prefix }}/{{ child.type }}/{{ c|key }}/" title="{{ c|id }}">{{ c }}</a>
-									</li>
-								{% empty %}
-									<li class="empty">None</li>
-								{% endfor %}
-							</ul>
-							<p class="help">Drag and drop {{ child.type|humanize }}s to sort them.</p>
-						</form>
-						<p id="{{ child.type }}-add-button" class="add">Add new {{ child.type|humanize }}s</p>
+    {% block children_block %}
+        <div class="children">
+            {% block children %}
+                {% for child in children %}
+                    <div class="child">
+                        <h2>{{ child.type|humanize }}s</h2>
+                        <form action="{{ child.type }}Orders/" method="post">
+                            <ul id="{{ child.type }}-itemList" class="items">
+                                {% for c in child.objs %}
+                                    <li id="{{ c|key }}">
+                                        <span class="handle" title="Drag to sort"></span>
+                                        <a href="{{ admin.prefix }}/{{ child.type }}/{{ c|key }}/" title="{{ c|id }}">{{ c }}</a>
+                                    </li>
+                                {% empty %}
+                                    <li class="empty">None</li>
+                                {% endfor %}
+                            </ul>
+                            <p class="help">Drag and drop {{ child.type|humanize }}s to sort them.</p>
+                        </form>
+                        <p id="{{ child.type }}-add-button" class="add">Add new {{ child.type|humanize }}s</p>
 
-						<div id="{{ child.type }}" class="new child item">
-							<h2>Add a {{ child.type|humanize|lower }} to this {{ type|humanize|lower }}</h2>
-							<form method="post" action="{{ child.action }}" id="{{ child.type }}-form">
-								<table cellspacing="0">
-									{{ child.form.as_table }}
-									<tr>
-										<th></th>
-										<td>
-											<input type="submit" value="Add {{ child.type|humanize }}">
-										</td>
-									</tr>
-								</table>
-							</form>
-						</div>
-					</div>
-				{% endfor %}
-			{% endblock %}
-		</div>
-	{% endblock %}
+                        <div id="{{ child.type }}" class="new child item">
+                            <h2>Add a {{ child.type|humanize|lower }} to this {{ type|humanize|lower }}</h2>
+                            <form method="post" action="{{ child.action }}" id="{{ child.type }}-form">
+                                <table cellspacing="0">
+                                    {{ child.form.as_table }}
+                                    <tr>
+                                        <th></th>
+                                        <td>
+                                            <input type="submit" value="Add {{ child.type|humanize }}">
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endblock %}
+        </div>
+    {% endblock %}
 {% endblock %}
