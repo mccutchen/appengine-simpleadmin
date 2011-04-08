@@ -23,5 +23,27 @@ def humanize(s):
     return re.sub(pat, sub, s).replace('_', ' ')
 
 @register.filter
-def f(func, arg):
-    return func(arg)
+def meth(obj, method_name):
+    """Returns the method with the given name from the given object. Designed
+    to be used to pull methods off of an object without having Django's dumb
+    template system call them. See also the `call` filter, below.
+    """
+    return getattr(obj, method_name)
+
+@register.filter
+def call(f, arg):
+    """Calls the given callable with the given argument. Designed to be used
+    in conjunction with the `meth` filter above to call single-arg methods on
+    objects in template contexts.
+
+    Usage example:
+
+        {{ obj|meth:'method_name'|call:'argument' }}
+
+    translates to
+
+        obj.method_name('argument')
+
+    This is ugly and dumb, I know.
+    """
+    return f(arg)
