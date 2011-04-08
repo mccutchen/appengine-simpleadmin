@@ -1,7 +1,18 @@
 import re
+from google.appengine.ext import db
 from google.appengine.ext.webapp.template import create_template_register
 
 register = create_template_register()
+
+@register.filter
+def key(obj):
+    """Given a db.Key or db.Model, returns a db.Key."""
+    return obj.key() if isinstance(obj, db.Model) else obj
+
+@register.filter
+def id(obj):
+    """Given a db.Key or db.Model, returns an int ID or string name."""
+    return key(obj).id_or_name()
 
 @register.filter
 def parents(obj):
