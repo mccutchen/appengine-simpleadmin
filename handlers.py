@@ -17,14 +17,18 @@ class AdminHandler(webapp.RequestHandler):
 
     extra_context = {}
 
-    def respond(self, resp, status=200, content_type='text/html'):
-        self.response.set_status(status)
-        self.response.headers['Content-Type'] = content_type
-        self.response.out.write(resp)
-
-    def render(self, path, context=None, status=200,
+    def render(self, paths, context=None, status=200,
                content_type='text/html'):
-        path = os.path.join(ADMIN_TEMPLATE_DIR, path)
+        """Renders the given template with the given context into the
+        response, setting the status code and content type. Paths can be a
+        single template path or a list of paths, in which case the first to be
+        found will be used.
+
+        Any extra_context defined on the handler will be added to the given
+        context dict before rendering.
+        """
+        # Figure out which template to render
+        path = self.find_template(paths)
         # Figure out what the final context to pass to the template should be,
         # based on the given context and the class's extra_context attribute
         final_context = dict(self.extra_context)
@@ -32,8 +36,31 @@ class AdminHandler(webapp.RequestHandler):
         content = template.render(path, final_context)
         return self.respond(content, status, content_type)
 
+    def find_template(self, paths):
+        """Tries to find template to render from the given paths, which may be
+        either a list of template paths or a single path.
+        """
+        if not isinstance(paths, (list, tuple)):
+            paths = [paths]
+        for path in paths:
+            path = os.path.join(ADMIN_TEMPLATE_DIR, path)
+            if os.path.exists(path):
+                return path
+        raise IOError('Template not found: %r', paths)
+
+    def respond(self, content, status=200, content_type='text/html'):
+        """Shortcut method for sending the given content back to the client
+        with the given status code and content type.
+        """
+        self.response.set_status(status)
+        self.response.headers['Content-Type'] = content_type
+        self.response.out.write(content)
+
     def respond_json(self, stuff, status=200,
                      content_type='application/json'):
+        """Shortcut for JSON-encoding the given stuff, which can be anything
+        that is JSON-encodable, and sending it back to the client.
+        """
         self.respond(json.dumps(stuff, cls=LazyEncoder), status, content_type)
 
     def handle_exception(self, exception, debug_mode):
