@@ -37,8 +37,8 @@ class SimpleAdmin(object):
     if given, should be a subclass of BaseDeleteHooks, and can be used to
     control how objects are deleted."""
 
-    def __init__(self, prefix=None, static_prefix=None, page_size=None,
-                 site_title=None, template_dir=None):
+    def __init__(self, prefix=None, static_prefix=None, extra_urls=None,
+                 page_size=None, site_title=None, template_dir=None):
 
         # The URL prefixes under which the admin app and its static resources
         # are mounted
@@ -52,6 +52,7 @@ class SimpleAdmin(object):
         else:
             self.static_prefix = DEFAULT_STATIC_PREFIX
 
+        self.extra_urls = extra_urls or []
         self.site_title = site_title or DEFAULT_SITE_TITLE
         self.template_dir = template_dir
 
@@ -213,6 +214,16 @@ class SimpleAdmin(object):
         for name, fn in inspect.getmembers(templateutils, callable):
             env.filters[name] = fn
 
+        # Enabling this monkeypatch can help track down hard to find errors
+        # that crop up during template rendering (since Jinja's own error
+        # reporting is so unhelpful on AppEngine).
+        real_handle_exception = env.handle_exception
+        def handle_exception(self, *args, **kwargs):
+            import logging, traceback
+            logging.error('Template exception:\n%s', traceback.format_exc())
+            real_handle_exception(self, *args, **kwargs)
+        env.handle_exception = handle_exception
+
         return env
 
     def render_to_string(self, path, context=None):
@@ -223,8 +234,8 @@ class SimpleAdmin(object):
         template = self.jinja_env.get_or_select_template(path)
         return template.render(context or {})
 
-    def run(self, debug=True, extra_urls=None):
-        """Creates and runs the WSGIApplication for this admin site."""
+    def create_wsgi_app(self, debug=False):
+        """Creates and returns a WSGIApplication for this admin site."""
 
         # A shortcut for generating a URL pattern tuple for this particular
         # admin site.
@@ -245,10 +256,7 @@ class SimpleAdmin(object):
 
         # The base set of URLs.  Any extra URLs come at the beginning, and may
         # be clobbered by those generated for the admin site.
-        if extra_urls is None:
-            urls = []
-        else:
-            urls = [url(pattern, view) for pattern, view in extra_urls]
+        urls = [url(pattern, view) for pattern, view in self.extra_urls]
 
         # Standard admin URLs.
         urls += [
@@ -272,8 +280,11 @@ class SimpleAdmin(object):
                 return url(pattern, views.Subcollection)
             urls.extend(map(parenturl, self.parents.iteritems()))
 
-        # Create and run the application
-        application = webapp.WSGIApplication(urls, debug=debug)
-        wsgiref.handlers.CGIHandler().run(application)
+        return webapp.WSGIApplication(urls, debug=debug)
 
-
+    def run(self, debug=False):
+        """A shortcut to easily run this admin site as a WSGIApplication,
+        useful if it does not need to be wrapped in any middleware.
+        """
+        app = self.create_wsgi_app(debug=debug)
+        wsgiref.handlers.CGIHandler().run(app)
