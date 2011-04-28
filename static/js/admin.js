@@ -124,37 +124,37 @@ KI.Backend.Sortable = function(list) {
     console.log('On list: ', list);
 };
 
-// Set up the tabs
-window.addEvent('domready', function() {
-    new TabSwapper({
-        selectedClass: 'active',
-        deselectedClass: '',
-        tabs: $$('#tabs li'),
-        clickers: $$('#tabs li'),
-        sections: $$('div.panel'),
-        /*remember what the last tab the user clicked was*/
-        cookieName: 'key-premium-management-tab',
-        /*use transitions to fade across*/
-        smooth: true,
-        smoothSize: true
-    });
-});
-
-// Separate tab handler for child-tab pages
-window.addEvent('domready', function() {
-    new TabSwapper({
-        selectedClass: 'active',
-        deselectedClass: '',
-        tabs: $$('#child-tabs li'),
-        clickers: $$('#child-tabs li'),
-        sections: $$('div.child-panel')
-    });
-});
+// // Set up the tabs
+// window.addEvent('domready', function() {
+//     new TabSwapper({
+//         selectedClass: 'active',
+//         deselectedClass: '',
+//         tabs: $$('#tabs li'),
+//         clickers: $$('#tabs li'),
+//         sections: $$('div.panel'),
+//         /*remember what the last tab the user clicked was*/
+//         cookieName: 'key-premium-management-tab',
+//         /*use transitions to fade across*/
+//         smooth: true,
+//         smoothSize: true
+//     });
+// });
+// 
+// // Separate tab handler for child-tab pages
+// window.addEvent('domready', function() {
+//     new TabSwapper({
+//         selectedClass: 'active',
+//         deselectedClass: '',
+//         tabs: $$('#child-tabs li'),
+//         clickers: $$('#child-tabs li'),
+//         sections: $$('div.child-panel')
+//     });
+// });
 
 // Load item lists dynamically
 window.addEvent('domready', function() {
     $$('div.panel>div.items>form>ul').each(function(list) {
-        KI.Backend.Pager(list);
+        //KI.Backend.Pager(list);
     });
 });
 
@@ -326,13 +326,6 @@ window.addEvent('domready', function() {
     });
 });
 
-// Properly set up rich text editors
-CKEDITOR.on('instanceCreated', function(e) {
-    var editor = e.editor;
-    // Make editor instances automatically update their corresponding
-    // textareas when they lose focus
-    editor.on('blur', function(e) { e.editor.updateElement(); });
-});
 
 // Initializes a plupload uploader for a form field. To do this, we need the
 // special upload URL, the entity's key, the name of the image field on the

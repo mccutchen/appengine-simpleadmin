@@ -80,7 +80,7 @@ class AdminHandler(webapp.RequestHandler):
             items = items[:limit]
 
         # Return a dict with all the data needed for pagination
-        return { 'items': map(self.admin.item_json, items),
+        return { 'items': items,
                  'next': next,
                  'count': count }
 

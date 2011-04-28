@@ -4,15 +4,7 @@
     Dashboard
 {% endblock %}
 
-{% block nav %}
-    <ul id="tabs">
-        {% for type, form in admin.manageables %}
-            <li><a>{{ type|humanize }}s</a></li>
-        {% endfor %}
-    </ul>
-{% endblock %}
-
-{% block content %}
+{% block content_hidden %}
     {% for type, form in admin.manageables %}
         <div id="{{ type }}" class="panel">
 

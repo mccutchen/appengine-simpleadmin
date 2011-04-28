@@ -20,7 +20,39 @@ h2 span.meta {
 }
 
 
-div#auth {
+/****************************************************************************
+    Sitewide header
+****************************************************************************/
+header {
+    color: #fff;
+    background-color: #666;
+    padding: 10px 10px 8px 10px;
+    line-height: 1;
+    /* Easy place to customize colors: */
+    text-shadow: rgba(0,0,0,.5) 2px 1px 1px;
+    border-bottom: 1px solid rgba(0,0,0,.5);
+    position: relative;
+    box-shadow: 0 0px 3px rgba(0,0,0,.75);
+}
+header h1, header h2 {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+header h1 {
+    font-size: 2em;
+}
+header h1 a {
+    color: inherit;
+}
+header h2 {
+    font-size: 1.5em;
+    color: rgba(0, 0, 0, .5);
+    text-shadow: rgba(255,255,255,.25) 1px 1px 1px;
+    margin-left: .2em;
+}
+
+header > .auth {
     color: rgba(255,255,255,.8);
     background-color: rgba(0,0,0,.3);
     padding: 5px 10px;
@@ -34,103 +66,64 @@ div#auth {
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
-div#auth b {
+header > .auth b {
     color: #fff;
 }
-div#auth span {
+header > .auth span {
     margin: 0 3px;
     color: rgba(255,255,255,.25);
 }
-div#auth a {
-    color: rgba(255,255,255,.5);
-}
-div#auth:hover a {
-    color: #fff;
-}
-div#auth span.bad {
+header > .auth span.bad {
     color: rgba(255,0,0,.75);
     font-weight: bold;
 }
-
-div#header {
-    color: #fff;
-    background-color: #666;
-    padding: 10px 10px 8px 10px;
-    line-height: 1;
-    /* Easy place to customize colors: */
-    text-shadow: rgba(0,0,0,.5) 2px 1px 1px;
-    border-bottom: 1px solid rgba(0,0,0,.5);
-    position: relative;
+header > .auth a {
+    color: rgba(255,255,255,.5);
 }
-div#header h1, div#header h2 {
+header > .auth:hover a {
+    color: #fff;
+}
+
+
+/****************************************************************************
+    Page layout
+****************************************************************************/
+body > nav, body > div.content {
+    display: table-cell;
+}
+
+
+/****************************************************************************
+    Main navigation
+****************************************************************************/
+nav {
+    background-color: #ccc;
+    border-right: 1px solid #bbb;
+}
+nav ul {
+    list-style-type: none;
     margin: 0;
     padding: 0;
-    display: inline-block;
 }
-div#header h1 {
-    font-size: 2em;
+nav ul li {
+    border-bottom: 1px solid #ddd;
 }
-div#header h1 a {
-    color: inherit;
-}
-div#header h2 {
-    font-size: 1.5em;
-    color: rgba(0, 0, 0, .5);
-    text-shadow: rgba(255,255,255,.25) 1px 1px 1px;
-    margin-left: .2em;
-}
-
-
-div#nav {
-    background-color: #ccc;
-    border-top: 1px solid #999;
-}
-div#nav a {
-    cursor: pointer;
+nav ul a {
     text-decoration: none;
     color: #333;
-}
-/* Tab-style links are in <ul>s */
-div#nav ul a {
-    padding: 5px 10px;
     display: block;
+    padding: 5px 20px;
+    border-bottom: 1px solid #bbb;
+    min-width: 100px;
 }
-/* Breadcrumb links are bare in the <div> */
-div#nav > a {
-    padding: 5px;
-    display: inline-block;
-}
-div#nav > a:first-child {
-    padding-left: 10px;
-}
-
-
-ul#tabs {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
-ul#tabs li {
-    display: inline-block;
-    margin: 0;
-    padding: 0;
-    border-right: 1px solid #fff;
-}
-ul#tabs li:hover {
-    background-color: #ddd;
-}
-ul#tabs li.active {
+nav ul a:hover {
     background-color: #fff;
-    border-right: 1px solid #aaa;
-    border-left: 1px solid #aaa;
-    margin-left: -1px;
+    border-bottom-color: #ccc;
 }
 
 
-div#content {
+div.content {
     padding: 5px 10px;
-    border-top: 1px solid #bbb;
-    margin-top: -1px;
 }
 
 

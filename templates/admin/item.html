@@ -17,12 +17,11 @@
             <h2>
                 Edit {{ type }}
                 <span class="meta">
-                    {% with parent as obj.parent() %}
-                        ({% if parent %}{{ parent.kind }}: <a href="{{ admin.prefix }}/{{ parent.kind }}/{{ parent|key }}/">{{ parent }}</a>, {% endif %}id: {{ obj|id }})
-                    {% endwith %}
+                    {% set parent = obj.parent() %}
+                    ({% if parent %}{{ parent.kind() }}: <a href="{{ admin.prefix }}/{{ parent.kind() }}/{{ parent|key }}/">{{ parent }}</a>, {% endif %}id: {{ obj|id }})
                 </span>
             </h2>
         {% endblock %}
-        {% include "_edit_item_form.html" %}
+        {% include "admin/_edit_item_form.html" %}
     </div>
 {% endblock %}

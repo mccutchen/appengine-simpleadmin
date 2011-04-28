@@ -17,26 +17,29 @@
     </head>
 
     <body>
-        <div id="auth">
-            {% if users.is_current_user_admin() %}
-                Logged in as <b>{{ users.get_current_user().nickname() }}</b>
-                <span>|</span>
-                <a href="{{ users.create_logout_url(admin.prefix) }}">Log out</a>
-            {% else %}
-                <span class="bad">Not logged in as an administrator!</span>
-            {% endif %}
-        </div>
-
-        <div id="header">
+        <header>
             <h1><a href="{{ admin.prefix }}/">{{ admin.site_title }}</a></h1>
             <h2>for Key Ingredient</h2>
-        </div>
+            <div class="auth">
+                {% if users.is_current_user_admin() %}
+                    Logged in as <b>{{ users.get_current_user().nickname() }}</b>
+                    <span>|</span>
+                    <a href="{{ users.create_logout_url(admin.prefix) }}">Log out</a>
+                {% else %}
+                    <span class="bad">Not logged in as an administrator!</span>
+                {% endif %}
+            </div>
+        </header>
 
-        <div id="nav">
-            {% block nav %}{% endblock %}
-        </div>
+        <nav class="models">
+            <ul>
+                {% for type, form in admin.manageables %}
+                    <li><a href="{{ admin.item_url(type) }}">{{ type|humanize }}s</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
 
-        <div id="content">
+        <div class="content">
             {% block content %}{% endblock %}
         </div>
     </body>

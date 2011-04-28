@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}
+    {{ kind|humanize }}s
+{% endblock %}
+
+{% block content %}
+    <div id="{{ type }}" class="panel">
+
+        <div class="items">
+            <h2>{{ kind|humanize }}s</h2>
+
+            {% if admin.filters_for(kind) %}
+                <div class="filters hidden">
+                    <h3>Filters</h3>
+                    <div class="fields">
+                        {% for field in admin.filters_for(kind) %}
+                            <form action="filter/{{ kind }}/{{ field }}/" method="get">
+                                <label for="filter-{{ kind }}-{{ field }}">
+                                    {# The field '__id__' has special meaning, which we should
+                                       spell out for the user. #}
+                                    {% if field == '__id__' %}
+                                        key id or name
+                                    {% else %}
+                                        {{ field|humanize }}
+                                    {% endif %}
+                                </label>
+                                <input type="text" name="q" id="filter-{{ type }}-{{ field }}">
+                            </form>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <form method="delete" action="{{ admin.item_url(kind) }}" class="bulk">
+                <ul class="{{ kind }}">
+                    {% for item in items %}
+                        <li><a href="{{ admin.item_url(item) }}">{{ item }}</a></li>
+                    {% else %}
+                        <li class="empty">No {{ kind|humanize|lower }}s</li>
+                    {% endfor %}
+                </ul>
+                <p class="controls">
+                    <span class="count"><span>{{ count }}</span> total {{ kind|humanize|lower }}s</span>
+                    <a class="next disabled">Next &raquo;</a>
+                </p>
+                <p><input type="submit" value="Bulk Delete" name="delete"></p>
+            </form>
+        </div>
+        
+        <div class="new-item">
+            <h2>New {{ kind|humanize }}</h2>
+            {% if kind in admin.children %}
+                <p>New {{ kind|humanize|lower }}s must be added from their <a href="{{ admin.item_url(admin.children[kind]) }}">{{ admin.children[kind]|humanize }}</a>'s page.</p>
+            {% else %}
+                {% if not kind in admin.creatable %}
+                    <p>{{ kind|humanize }}s cannot be created directly.</p>
+                {% else %}
+                    <form method="post" action="{{ kind }}/" id="{{ form.prefix }}-form" {% if form.is_multipart %}enckind="multipart/form-data"{% endif %}>
+                        <table cellspacing="0">
+                            {{ form.as_table()|safe }}
+                            <tr>
+                                <th></th>
+                                <td><input type="submit" value="Create {{ kind }}"/></td>
+                            </tr>
+                        </table>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

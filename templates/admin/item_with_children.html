@@ -1,10 +1,10 @@
-{% extends "item.html" %}
+{% extends "admin/item.html" %}
 
 {% block content %}
-    {% block item_header %}{{ block.super }}{% endblock %}
+    {% block item_header %}{{ super() }}{% endblock %}
 
     <div id="{{ type }}" class="parent item">
-        {% include "_edit_item_form.html" %}
+        {% include "admin/_edit_item_form.html" %}
     </div>
 
     {% block children_block %}
@@ -20,7 +20,7 @@
                                         <span class="handle" title="Drag to sort"></span>
                                         <a href="{{ admin.prefix }}/{{ child.type }}/{{ c|key }}/" title="{{ c|id }}">{{ c }}</a>
                                     </li>
-                                {% empty %}
+                                {% else %}
                                     <li class="empty">None</li>
                                 {% endfor %}
                             </ul>

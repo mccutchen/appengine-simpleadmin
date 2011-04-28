@@ -20,9 +20,21 @@ class Collection(AdminHandler):
 
     def get(self, kind):
         model_class = self.admin.model_for(kind)
+        form_class = self.admin.form_for(kind)
+
+        # TODO: Actually handle pagination
         offset = self.request.params.get('offset')
         page = self.paginate(model_class.all(), offset)
-        self.respond_json(page)
+
+        context = {
+            'kind': kind,
+            'form': form_class(),
+            'items': page['items'],
+            'count': page['count'],
+            'next': page['next'],
+            'offset': offset,
+            }
+        self.render('admin/item_list.html', context)
 
     def post(self, kind):
         form_class = self.admin.form_for(kind)
