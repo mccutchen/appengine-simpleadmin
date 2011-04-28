@@ -32,7 +32,7 @@
                             <h2>Add a {{ child.type|humanize|lower }} to this {{ type|humanize|lower }}</h2>
                             <form method="post" action="{{ child.action }}" id="{{ child.type }}-form">
                                 <table cellspacing="0">
-                                    {{ child.form.as_table }}
+                                    {{ child.form.as_table() }}
                                     <tr>
                                         <th></th>
                                         <td>

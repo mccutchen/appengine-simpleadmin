@@ -10,9 +10,6 @@ from django.utils import simplejson as json
 from utils import Http404, LazyEncoder, order_entities
 
 
-ADMIN_TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
-
-
 class AdminHandler(webapp.RequestHandler):
 
     extra_context = {}
@@ -27,26 +24,12 @@ class AdminHandler(webapp.RequestHandler):
         Any extra_context defined on the handler will be added to the given
         context dict before rendering.
         """
-        # Figure out which template to render
-        path = self.find_template(paths)
         # Figure out what the final context to pass to the template should be,
         # based on the given context and the class's extra_context attribute
         final_context = dict(self.extra_context)
         final_context.update(context or {})
-        content = template.render(path, final_context)
+        content = self.admin.render_to_string(paths, final_context)
         return self.respond(content, status, content_type)
-
-    def find_template(self, paths):
-        """Tries to find template to render from the given paths, which may be
-        either a list of template paths or a single path.
-        """
-        if not isinstance(paths, (list, tuple)):
-            paths = [paths]
-        for path in paths:
-            path = os.path.join(ADMIN_TEMPLATE_DIR, path)
-            if os.path.exists(path):
-                return path
-        raise IOError('Template not found: %r', paths)
 
     def respond(self, content, status=200, content_type='text/html'):
         """Shortcut method for sending the given content back to the client

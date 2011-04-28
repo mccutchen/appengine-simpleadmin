@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
 {% block page_title %}
     Edit {{ type }}
@@ -7,7 +7,7 @@
 {% block nav %}
     <a href="{{ admin.prefix }}/">Dashboard</a>
     {% for parentobj in obj|parents %}&raquo;
-        <a href="{{ admin|meth:'item_url'|call:parentobj }}">{{ parentobj }}</a>
+        <a href="{{ admin.item_url(parentobj) }}">{{ parentobj }}</a>
     {% endfor %}
 {% endblock %}
 

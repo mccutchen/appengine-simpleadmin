@@ -3,7 +3,7 @@
         <div id="errors">{{ type }} could not be saved.  Please correct the errors below and try again.</div>
     {% endif %}
     <table cellspacing="0">
-        {{ form.as_table }}
+        {{ form.as_table() }}
         <tr>
             <td>
                 <a class="delete item">&#10008; Delete</a>

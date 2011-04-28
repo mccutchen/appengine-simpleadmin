@@ -1,3 +1,4 @@
+import inspect
 import logging
 import os
 import sys
@@ -5,14 +6,15 @@ from collections import defaultdict
 from functools import partial
 import wsgiref.handlers
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
 from google.appengine.ext import webapp
 from google.appengine.ext import db
 from google.appengine.api import users
 
+from ext import jinja2
+
 import views
 import utils
+import templateutils
 
 
 # Defaults
@@ -23,13 +25,7 @@ DEFAULT_SITE_TITLE = 'SimpleAdmin'
 
 # Where are we located?
 ADMIN_ROOT = os.path.dirname(__file__)
-PARENT_DIR = os.path.realpath(os.path.join(ADMIN_ROOT, '../'))
-
-# Make sure we can add our template filters/tags
-if PARENT_DIR not in sys.path:
-    sys.path.append(PARENT_DIR)
-
-webapp.template.register_template_library('simpleadmin.templateutils')
+ADMIN_TEMPLATE_DIR = os.path.join(ADMIN_ROOT, 'templates')
 
 
 class SimpleAdmin(object):
@@ -42,7 +38,7 @@ class SimpleAdmin(object):
     control how objects are deleted."""
 
     def __init__(self, prefix=None, static_prefix=None, delete_hooks=None,
-                 page_size=None, site_title=None):
+                 page_size=None, site_title=None, template_dir=None):
 
         # The URL prefixes under which the admin app and its static resources
         # are mounted
@@ -57,6 +53,7 @@ class SimpleAdmin(object):
             self.static_prefix = DEFAULT_STATIC_PREFIX
 
         self.site_title = site_title or DEFAULT_SITE_TITLE
+        self.template_dir = template_dir
 
         # The names of the models we know how to manage, used as keys in the
         # dicts below
@@ -80,6 +77,9 @@ class SimpleAdmin(object):
 
         # Maximum number of objects to list in the item list on the dashboard
         self.page_size = page_size or DEFAULT_PAGE_SIZE
+
+        # Create a Jinja environment to use when rendering templates
+        self.jinja_env = self.create_jinja_env()
 
     def register(self, model, parent=None, form=None, filters=None,
                  creatable=True):
@@ -208,6 +208,33 @@ class SimpleAdmin(object):
         # Create a class with the same name that's a subclass of the given
         # RequestHandler class
         return type(request_handler.__name__, (request_handler,), attrs)
+
+    def create_jinja_env(self):
+        """Creates and returns the Jinja Environment object we will use to
+        render all templates. The template directories are a combination of
+        the user-supplied template_dir and the base admin template directory.
+        """
+        template_dirs = [ADMIN_TEMPLATE_DIR]
+        if self.template_dir:
+            template_dirs[0:0] = [self.template_dir]
+
+        env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(template_dirs),
+            undefined=jinja2.Undefined,
+            autoescape=True)
+
+        for name, fn in inspect.getmembers(templateutils, callable):
+            env.filters[name] = fn
+
+        return env
+
+    def render_to_string(self, path, context=None):
+        """Renders the template at the given path, which can be a single path
+        or a list of paths to try, with the given context and returns the
+        result.
+        """
+        template = self.jinja_env.get_or_select_template(path)
+        return template.render(context or {})
 
     def run(self, debug=True, extra_urls=None):
         """Creates and runs the WSGIApplication for this admin site."""

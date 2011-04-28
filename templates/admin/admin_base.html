@@ -18,10 +18,10 @@
 
     <body>
         <div id="auth">
-            {% if users.is_current_user_admin %}
-                Logged in as <b>{{ users.get_current_user.nickname }}</b>
+            {% if users.is_current_user_admin() %}
+                Logged in as <b>{{ users.get_current_user().nickname() }}</b>
                 <span>|</span>
-                <a href="{{ users|meth:'create_logout_url'|call:admin.prefix }}">Log out</a>
+                <a href="{{ users.create_logout_url(admin.prefix) }}">Log out</a>
             {% else %}
                 <span class="bad">Not logged in as an administrator!</span>
             {% endif %}
