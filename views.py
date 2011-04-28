@@ -1,4 +1,6 @@
 import logging
+import urllib
+
 from google.appengine.ext import db
 
 from handlers import AdminHandler
@@ -135,7 +137,7 @@ class Item(AdminHandler):
 
     def delete(self, kind, key):
         try:
-            self.admin.delete(kind, key)
+            db.delete(kind, db.Key(key))
             self.respond_json('OK')
         except Exception, e:
             self.respond_json(str(e), 400)
@@ -277,13 +279,16 @@ class BulkItems(AdminHandler):
     """Allows multiple items to be operated on at once."""
 
     def delete(self, kind, keys):
-        import urllib
-        keys = urllib.unquote(keys).split(',')
         try:
-            for key in keys:
-                self.admin.delete(kind, key)
-            self.respond_json('OK')
+            keys = map(db.Key, urllib.unquote(keys).split(','))
         except Exception, e:
-            logging.error('Bulk delete error: %s' % e)
-            self.respond_json(str(e), status_code=400)
-
+            logging.error('Invalid key(s): %s', e)
+            self.respond_json(str(e), status=400)
+        else:
+            try:
+                db.delete(keys)
+            except Exception, e:
+                logging.error('Bulk delete error: %s', e)
+                self.respond_json(str(e), status=400)
+            else:
+                self.respond_json('OK')

@@ -37,8 +37,8 @@ class SimpleAdmin(object):
     if given, should be a subclass of BaseDeleteHooks, and can be used to
     control how objects are deleted."""
 
-    def __init__(self, prefix=None, static_prefix=None, delete_hooks=None,
-                 page_size=None, site_title=None, template_dir=None):
+    def __init__(self, prefix=None, static_prefix=None, page_size=None,
+                 site_title=None, template_dir=None):
 
         # The URL prefixes under which the admin app and its static resources
         # are mounted
@@ -69,11 +69,6 @@ class SimpleAdmin(object):
         # Map parent names to child models, and vice versa
         self.parents = defaultdict(list)
         self.children = {}
-
-        # Either custom or default delete hooks that control how objects are
-        # deleted
-        self.delete_hooks = delete_hooks() if delete_hooks \
-            else BaseDeleteHooks()
 
         # Maximum number of objects to list in the item list on the dashboard
         self.page_size = page_size or DEFAULT_PAGE_SIZE
@@ -154,14 +149,6 @@ class SimpleAdmin(object):
     #     relationships we know how to manage (via our subcollections)."""
     #     return dict((child.rstrip('s'), parent) for (parent, child, view)
     #                 in self.subcollections)
-
-    def delete(self, kind, key):
-        """Deletes the object of the given kind with the given key.  Lets this
-        admin's delete hooks, which should return a list of keys, figure out
-        which objects to actually delete."""
-        hook = getattr(self.delete_hooks, 'delete_%s' % kind.lower())
-        keys = hook(key)
-        db.delete(keys)
 
     def post_save(self, obj):
         """Called after putting the given object in the datastore. By default,
@@ -290,17 +277,3 @@ class SimpleAdmin(object):
         wsgiref.handlers.CGIHandler().run(application)
 
 
-class BaseDeleteHooks(object):
-    """Provides a place to store hooks to be called to delete objects of a
-    certain kind. Each hook should be a method named delete_{kind} and should
-    return a list of keys to be deleted.
-
-    The default delete hook just returns the key that was given (ie, just
-    deletes the given object)."""
-
-    def __getattr__(self, name):
-        return self.default_hook
-
-    def default_hook(self, key):
-        """By default, just delete the given object."""
-        return [key]
