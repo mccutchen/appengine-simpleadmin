@@ -119,7 +119,11 @@ class SimpleAdmin(object):
         return self.filters[kind]
 
     def item_url(self, item):
-        return '%s/%s/%s/' % (self.prefix, item.kind(), item.key())
+        if isinstance(item, db.Model):
+            return '%s/%s/%s/' % (self.prefix, item.kind(), item.key())
+        else:
+            kind = item.kind() if isinstance(item, type) else item
+            return '%s/%s/' % (self.prefix, kind)
 
     def children_for(self, kind):
         return self.parents.get(kind)
