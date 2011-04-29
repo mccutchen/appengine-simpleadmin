@@ -130,7 +130,8 @@ class SimpleAdmin(object):
 
     def item_json(self, item):
         """Returns a JSON-serializable dict of the important parts of the
-        given item."""
+        given item.
+        """
         return { 'str': unicode(item),
                  'url': self.item_url(item),
                  'key': str(item.key()) }
@@ -138,7 +139,8 @@ class SimpleAdmin(object):
     @property
     def manageables(self):
         """Returns a tuple, sorted by name, of (name, form instance) for each
-        manageable entity."""
+        manageable entity.
+        """
         return sorted((n, self.forms[n]()) for n in self.names)
 
     # @property
@@ -155,20 +157,35 @@ class SimpleAdmin(object):
     #     return dict((child.rstrip('s'), parent) for (parent, child, view)
     #                 in self.subcollections)
 
-    def post_save(self, obj):
-        """Called after putting the given object in the datastore. By default,
-        this simply kicks off indexing for searchable objects."""
+
+    ##########################################################################
+    # Hooks
+    ##########################################################################
+    def pre_save(self, obj):
+        """Called before putting the given object in the datastore. The object
+        might not have a key, if it's new.
+        """
         pass
 
-    def post_image_update(self, obj):
-        """Called after creating/updating/deleting an image on an object.
-        Might be useful to, say, clear caches or something."""
+    def post_save(self, obj):
+        """Called after putting the given object in the datastore."""
+        pass
+
+    def pre_delete(self, key):
+        """Called before deleting the object with the given key. Only the key
+        is given, because we might not have the full object at the time.
+        """
+        pass
+
+    def post_delete(self, key):
+        """Called after deleting the object with the given key."""
         pass
 
     def extra_context(self, obj):
         """Called by each admin view to augment the template context for the
         given object.  Subclasses can override this method to augment the
-        context for specific objects."""
+        context for specific objects.
+        """
         return {}
 
     def wrap_handler(self, request_handler):
@@ -180,7 +197,8 @@ class SimpleAdmin(object):
 
         Useful when specifying the handlers when initializing the
         WSGIApplication, because you don't have control over class
-        initialization when using webapp's RequestHandlers."""
+        initialization when using webapp's RequestHandlers.
+        """
 
         # The default context that will be provided to every admin view
         # contains the admin site itself and the App Engine users module, as

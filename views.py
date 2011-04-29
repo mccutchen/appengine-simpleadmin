@@ -40,7 +40,9 @@ class Collection(AdminHandler):
         form_class = self.admin.form_for(kind)
         form = form_class(self.request.POST, self.get_uploaded_files())
         if form.is_valid():
-            obj = form.save()
+            obj = form.save(commit=False)
+            self.admin.pre_save(obj)
+            obj.put()
             self.admin.post_save(obj)
             self.respond_json(self.admin.item_json(obj), status_code=201)
         else:
@@ -54,21 +56,15 @@ class Subcollection(AdminHandler):
 
 class Item(AdminHandler):
     """An individual item.  GET gets an editable view of the item, PUT updates
-    the item, DELETE deletes the item."""
+    the item, DELETE deletes the item.
+    """
 
     def get(self, kind, key, form=None, status=200):
         obj = entity_or_404(key)
         form_class = self.admin.form_for(kind)
 
         if form is None:
-            # Gather up the image fields, so we can provide an initial value
-            # of True to the form if the field already has image data init it
-            img_fields = [k for k,v in obj.properties().items()
-                          if isinstance(v, db.BlobProperty)]
-            img_urls = dict((f, '%s/%s/%s/img/%s/' % (self.admin.prefix,
-                                                      kind, key, f))
-                            for f in img_fields if getattr(obj, f))
-            form = form_class(instance=obj, initial=img_urls)
+            form = form_class(instance=obj)
 
         # Every item template gets the following context
         context = {
@@ -102,23 +98,6 @@ class Item(AdminHandler):
             # A short reference for form.cleaned_data
             data = form.cleaned_data
 
-            # If the object has a content_type field, it might have an
-            # associated BlobProperty containing some file data (usually an
-            # image), and we should automatically update the content_type
-            # field based on the content type of the uploaded file (if there
-            # is one), but only if a content type wasn't already given.
-            if hasattr(obj, 'content_type') and 'content_type' not in data:
-                for field, prop in obj.properties().iteritems():
-                    if isinstance(prop, db.BlobProperty):
-                        newval = data.get(field)
-                        # This will be True if it's an uploaded file object
-                        if hasattr(newval, 'content_type'):
-                            logging.info(
-                                'Automagic content type for %s: %s',
-                                newval, newval.content_type)
-                            data['content_type'] = newval.content_type
-                            break
-
             # Get the form to update the object without saving it to the
             # datastore, so we can work around a bug below.
             obj = form.save(commit=False)
@@ -133,31 +112,31 @@ class Item(AdminHandler):
                     logging.info('Working around App Engine bug 599')
                     setattr(obj, field, None)
 
-            # Now, finally, save the object
+            # Now, finally, save the object and run any hooks
+            self.admin.pre_save(obj)
             obj.put()
-
-            # Run any post_save hooks
             self.admin.post_save(obj)
-
-            # If we got any file uploads, it's (probably) an image for this
-            # object, so call the callback
-            if files:
-                self.admin.post_image_update(obj)
             self.redirect('.')
         else:
             return self.get(kind, key, form, 400)
 
     def delete(self, kind, key):
+        key = db.Key(key)
+        self.admin.pre_delete(key)
         try:
-            db.delete(kind, db.Key(key))
-            self.respond_json('OK')
+            db.delete(key)
         except Exception, e:
+            logging.error('Error deleting %s: %s', key, e)
             self.respond_json(str(e), 400)
+        else:
+            self.admin.post_delete(key)
+            self.respond_json('OK')
 
 
 class ItemFilter(AdminHandler):
     """Allows items to be filtered by a particular field, if they have been
-    registered with that field in the admin site."""
+    registered with that field in the admin site.
+    """
 
     def get(self, kind, field):
         model_class = self.admin.model_for(kind)
@@ -209,7 +188,8 @@ class ItemFilter(AdminHandler):
 class ItemIdFilter(AdminHandler):
     """A special-case filter for looking up items by their key IDs or key
     names.  If the given `q` query is numeric, it is assumed to be a key ID.
-    Otherwise, it is assumed to be a key name."""
+    Otherwise, it is assumed to be a key name.
+    """
 
     def get(self, kind):
         q = self.request.get('q')
@@ -226,67 +206,6 @@ class ItemIdFilter(AdminHandler):
         self.respond_json(page)
 
 
-class ItemSearch(AdminHandler):
-    """Allows items to be searched."""
-
-    def get(self, kind):
-        model_class = self.admin.model_for(kind)
-        q = self.request.get('q')
-        if q and hasattr(model_class, 'search'):
-            results = model_class.search(q)
-            # Return a dict with all the data needed for pagination (though we
-            # won't be paging through this, for now)
-            resp = { 'items': map(self.admin.item_json, results),
-                     'next': None,
-                     'count': len(results) }
-            self.respond_json(resp)
-        else:
-            self.respond_json('No query given', status_code=400)
-
-
-class ItemImage(AdminHandler):
-    """Allows an image for an item to be retrieved, given an item's key and the
-    name of a field on the item with image content."""
-
-    def get(self, kind, key, field):
-        obj = entity_or_404(key)
-        img = getattr(obj, field, None)
-        if img:
-            content_type = getattr(obj, 'content_type', 'image/jpeg')
-            self.response.headers['Content-Type'] = str(content_type)
-            self.response.out.write(img)
-        else:
-            self.response.out.write(
-                '%s %s has no image in its %s field.' % (kind, obj, field))
-            self.error(404)
-
-    def post(self, kind, key, field):
-        obj = entity_or_404(key)
-        img = self.uploaded_files.get(field)
-        if img:
-            setattr(obj, field, img.read())
-            if hasattr(obj, 'content_type'):
-                obj.content_type = img.content_type
-            obj.put()
-            self.admin.post_save(obj)
-            self.admin.post_image_update(obj)
-            uri = '%s/%s/%s/img/%s/' % (self.admin.prefix, kind, key, field)
-            resp = { 'uri': uri }
-            self.respond_json(resp, status_code=201)
-        else:
-            self.respond_json('Unknown field', status_code=404)
-
-    def delete(self, kind, key, field):
-        obj = entity_or_404(key)
-        if hasattr(obj, field):
-            setattr(obj, field, None)
-            obj.put()
-            self.admin.post_image_update(obj)
-            self.respond_json('OK')
-        else:
-            self.respond_json('Unknown field', status_code=400)
-
-
 class BulkItems(AdminHandler):
     """Allows multiple items to be operated on at once."""
 
@@ -297,10 +216,12 @@ class BulkItems(AdminHandler):
             logging.error('Invalid key(s): %s', e)
             self.respond_json(str(e), status=400)
         else:
+            map(self.admin.pre_delete, keys)
             try:
                 db.delete(keys)
             except Exception, e:
                 logging.error('Bulk delete error: %s', e)
                 self.respond_json(str(e), status=400)
             else:
+                map(self.admin.post_delete, keys)
                 self.respond_json('OK')
