@@ -35,7 +35,10 @@
             <form method="delete" action="{{ admin.item_url(kind) }}" class="bulk">
                 <ul class="{{ kind }}">
                     {% for item in items %}
-                        <li><a href="{{ admin.item_url(item) }}">{{ item }}</a></li>
+                        <li>
+                            <input type="checkbox" name="key" value="{{ item|key }}">
+                            <a href="{{ admin.item_url(item) }}">{{ item }}</a>
+                        </li>
                     {% else %}
                         <li class="empty">No {{ kind|humanize|lower }}s</li>
                     {% endfor %}

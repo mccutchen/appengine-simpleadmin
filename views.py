@@ -92,8 +92,7 @@ class Item(AdminHandler):
     def post(self, kind, key):
         obj = entity_or_404(key)
         form_class = self.admin.form_for(kind)
-        files = self.get_uploaded_files()
-        form = form_class(self.request.POST, files, instance=obj)
+        form = form_class(self.request.POST, instance=obj)
         if form.is_valid():
             # A short reference for form.cleaned_data
             data = form.cleaned_data
