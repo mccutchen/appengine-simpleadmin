@@ -80,6 +80,7 @@ class Item(AdminHandler):
         # whether this item can have children.
         if kind in self.admin.parents:
             item_template = 'item_with_children'
+            context['children'] = self.admin.get_children(obj)
         else:
             item_template = 'item'
 

@@ -138,8 +138,8 @@ class SimpleAdmin(object):
 
     @property
     def manageables(self):
-        """Returns a tuple, sorted by name, of (name, form instance) for each
-        manageable entity.
+        """Returns a list, sorted by name, of (name, form instance) tuples
+        for each manageable entity.
         """
         return sorted((n, self.forms[n]()) for n in self.names)
 
@@ -157,6 +157,23 @@ class SimpleAdmin(object):
     #     return dict((child.rstrip('s'), parent) for (parent, child, view)
     #                 in self.subcollections)
 
+    def get_children(self, obj):
+        child_kinds = self.children_for(obj.kind())
+        children = {}
+        for kind in child_kinds:
+            lower_name = kind.lower()
+            possible_names = [
+                '%ss' % lower_name,
+                '%s_set' % lower_name,
+                'get_%ss' % lower_name]
+            for name in possible_names:
+                try:
+                    getter = getattr(obj, name)
+                except AttributeError:
+                    continue
+                else:
+                    children[kind] = getter() if callable(getter) else getter
+        return children
 
     ##########################################################################
     # Hooks
